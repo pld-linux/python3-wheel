@@ -61,32 +61,23 @@ This is package contains Python 3 version of the package.
 # remove unneeded shebangs
 sed -ie '1d' %{module}/{egg2wheel,wininst2wheel}.py
 
-%if %{with python3}
-set -- *
-install -d py3
-cp -a "$@" py3
-%endif
-
 %build
 %if %{with python2}
-%{__python} setup.py build
+%py_build
 %endif
 
 %if %{with python3}
-cd py3
-%{__python3} setup.py build
+%py3_build
 %endif
 
 %if %{with test}
 # remove setup.cfg that makes pytest require pytest-cov (unnecessary dep)
 rm setup.cfg
-PYTHONPATH=$(pwd) py.test --ignore build -k 'not test_keygen'
+PYTHONPATH=build-2/lib py.test --ignore build -k 'not test_keygen'
 
 # no test for Python 3, no python3-jsonschema yet
 %if %{with python3} && 0
-cd py3
-rm setup.cfg
-PYTHONPATH=$(pwd) py.test-%{py3_ver} --ignore build
+PYTHONPATH=build-3/lib py.test-%{py3_ver} --ignore build
 %endif
 
 %endif
@@ -98,9 +89,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT
 %if %{with python3}
 cd py3
-%{__python3} setup.py install --skip-build \
-	--optimize=2 \
-	--root=$RPM_BUILD_ROOT
+%py3_install
 cd $RPM_BUILD_ROOT%{_bindir}
 	for f in $(ls); do mv $f python3-$f; done
 cd -
@@ -109,9 +98,7 @@ cd -
 %endif
 
 %if %{with python2}
-%{__python} setup.py install --skip-build \
-	--optimize=2 \
-	--root=$RPM_BUILD_ROOT
+%py_install
 
 %{__rm} -r $RPM_BUILD_ROOT%{py_sitescriptdir}/%{module}/test
 
