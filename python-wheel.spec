@@ -14,6 +14,7 @@ Group:		Libraries/Python
 Source0:	https://pypi.python.org/packages/source/w/%{module}/%{module}-%{version}.tar.gz
 # Source0-md5:	3b0d66f0d127ea8befaa5d11453107fd
 URL:		https://bitbucket.org/pypa/wheel
+BuildRequires:	rpmbuild(macros) >= 1.710
 %if %{with python2}
 BuildRequires:	python-argparse
 BuildRequires:	python-devel
