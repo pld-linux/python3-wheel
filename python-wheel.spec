@@ -1,34 +1,44 @@
 #
 # Conditional build:
-%bcond_with	tests	# do not perform "make test"
+%bcond_with	tests	# unit tests [broken with \--build-base]
 %bcond_without	python2 # CPython 2.x module
-%bcond_with	python3 # CPython 3.x module
+%bcond_without	python3 # CPython 3.x module
 
 %define 	module	wheel
 Summary:	A built-package format for Python
+Summary(pl.UTF-8):	Format zbudowanych pakietów dla Pythona
 Name:		python-%{module}
-Version:	0.24.0
-Release:	0.1
+Version:	0.29.0
+Release:	1
 License:	MIT
 Group:		Libraries/Python
-Source0:	https://pypi.python.org/packages/source/w/%{module}/%{module}-%{version}.tar.gz
-# Source0-md5:	3b0d66f0d127ea8befaa5d11453107fd
+#Source0Download: https://pypi.python.org/simple/wheel/
+Source0:	https://pypi.python.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
+# Source0-md5:	555a67e4507cedee23a0deb9651e452f
 URL:		https://bitbucket.org/pypa/wheel
 BuildRequires:	rpmbuild(macros) >= 1.710
 %if %{with python2}
+BuildRequires:	python-devel >= 1:2.6
+BuildRequires:	python-setuptools
+%if %{with tests}
+%if "%{py_ver}" < "2.7"
 BuildRequires:	python-argparse
-BuildRequires:	python-devel
+%endif
+BuildRequires:	python-coverage
 BuildRequires:	python-jsonschema
 BuildRequires:	python-keyring
 BuildRequires:	python-pytest
-BuildRequires:	python-setuptools
+%endif
 %endif
 %if %{with python3}
-BuildRequires:	python3-devel
+BuildRequires:	python3-devel >= 1:3.2
+BuildRequires:	python3-setuptools
+%if %{with tests}
+BuildRequires:	python3-coverage
 BuildRequires:	python3-jsonschema
 BuildRequires:	python3-keyring
 BuildRequires:	python3-pytest
-BuildRequires:	python3-setuptools
+%endif
 %endif
 Requires:	python-argparse
 BuildArch:	noarch
@@ -42,8 +52,17 @@ and the .whl extension. It is designed to contain all the files for a
 PEP 376 compatible install in a way that is very close to the on-disk
 format.
 
+%description -l pl.UTF-8
+Format zbudowanych pakietów dla Pythona.
+
+"wheel" to archiwum w formacie ZIP ze specjalnie sformatowaną nazwą
+pliku oraz rozszerzeniem ".whl". Jest zaprojektowane, aby zawierało
+wszystkie pliki instalacji zgodnej z PEP 376 w sposób bardzo zbliżony
+do formatu na dysku.
+
 %package -n python3-%{module}
 Summary:	A built-package format for Python
+Summary(pl.UTF-8):	Format zbudowanych pakietów dla Pythona
 Group:		Libraries/Python
 
 %description -n python3-%{module}
@@ -54,33 +73,35 @@ and the .whl extension. It is designed to contain all the files for a
 PEP 376 compatible install in a way that is very close to the on-disk
 format.
 
-This is package contains Python 3 version of the package.
+%description -n python3-%{module} -l pl.UTF-8
+Format zbudowanych pakietów dla Pythona.
+
+"wheel" to archiwum w formacie ZIP ze specjalnie sformatowaną nazwą
+pliku oraz rozszerzeniem ".whl". Jest zaprojektowane, aby zawierało
+wszystkie pliki instalacji zgodnej z PEP 376 w sposób bardzo zbliżony
+do formatu na dysku.
 
 %prep
 %setup -q -n %{module}-%{version}
 
-# remove unneeded shebangs
-sed -ie '1d' %{module}/{egg2wheel,wininst2wheel}.py
+# not installed as standalone scripts, so remove unneeded shebangs
+%{__sed} -ie '1d' %{module}/{egg2wheel,wininst2wheel}.py
 
 %build
 %if %{with python2}
 %py_build
+
+%if %{with tests}
+PYTHONPATH=build-2/lib py.test-%{py_ver} --ignore build -k 'not test_keygen'
+%endif
 %endif
 
 %if %{with python3}
 %py3_build
-%endif
 
-%if %{with test}
-# remove setup.cfg that makes pytest require pytest-cov (unnecessary dep)
-rm setup.cfg
-PYTHONPATH=build-2/lib py.test --ignore build -k 'not test_keygen'
-
-# no test for Python 3, no python3-jsonschema yet
-%if %{with python3} && 0
+%if %{with tests}
 PYTHONPATH=build-3/lib py.test-%{py3_ver} --ignore build
 %endif
-
 %endif
 
 %clean
@@ -89,17 +110,16 @@ rm -rf $RPM_BUILD_ROOT
 %install
 rm -rf $RPM_BUILD_ROOT
 %if %{with python3}
-cd py3
 %py3_install
-cd $RPM_BUILD_ROOT%{_bindir}
-	for f in $(ls); do mv $f python3-$f; done
-cd -
+%{__mv} $RPM_BUILD_ROOT%{_bindir}/wheel{,-3}
 
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitescriptdir}/%{module}/test
 %endif
 
 %if %{with python2}
 %py_install
+%{__mv} $RPM_BUILD_ROOT%{_bindir}/wheel{,-2}
+ln -sf wheel-2 $RPM_BUILD_ROOT%{_bindir}/wheel
 
 %{__rm} -r $RPM_BUILD_ROOT%{py_sitescriptdir}/%{module}/test
 
@@ -109,8 +129,9 @@ cd -
 %if %{with python2}
 %files
 %defattr(644,root,root,755)
-%doc LICENSE.txt CHANGES.txt README.txt
+%doc CHANGES.txt LICENSE.txt README.txt
 %attr(755,root,root) %{_bindir}/wheel
+%attr(755,root,root) %{_bindir}/wheel-2
 %{py_sitescriptdir}/wheel
 %{py_sitescriptdir}/wheel-%{version}-py*.egg-info
 %endif
@@ -118,7 +139,8 @@ cd -
 %if %{with python3}
 %files -n python3-%{module}
 %defattr(644,root,root,755)
-%doc LICENSE.txt CHANGES.txt README.txt
-%attr(755,root,root) %{__python}3-wheel
-%{py3_sitescriptdir}/%{module}*
+%doc CHANGES.txt LICENSE.txt README.txt
+%attr(755,root,root) %{_bindir}/wheel-3
+%{py3_sitescriptdir}/wheel
+%{py3_sitescriptdir}/wheel-%{version}-py*.egg-info
 %endif
