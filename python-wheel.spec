@@ -16,18 +16,20 @@ Group:		Libraries/Python
 Source0:	https://pypi.python.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
 # Source0-md5:	555a67e4507cedee23a0deb9651e452f
 URL:		https://bitbucket.org/pypa/wheel
-BuildRequires:	rpmbuild(macros) >= 1.710
 %if %{with python2}
 BuildRequires:	python-devel >= 1:2.6
 BuildRequires:	python-setuptools
 %if %{with tests}
 %if "%{py_ver}" < "2.7"
 BuildRequires:	python-argparse
+BuildRequires:	python-importlib
 %endif
 BuildRequires:	python-coverage
 BuildRequires:	python-jsonschema
 BuildRequires:	python-keyring
 BuildRequires:	python-pytest
+BuildRequires:	python-pytest-cov
+BuildRequires:	python-pyxdg
 %endif
 %endif
 %if %{with python3}
@@ -38,9 +40,12 @@ BuildRequires:	python3-coverage
 BuildRequires:	python3-jsonschema
 BuildRequires:	python3-keyring
 BuildRequires:	python3-pytest
+BuildRequires:	python3-pytest-cov
+BuildRequires:	python3-pyxdg
 %endif
 %endif
-Requires:	python-argparse
+BuildRequires:	rpm-pythonprov
+BuildRequires:	rpmbuild(macros) >= 1.714
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -92,7 +97,7 @@ do formatu na dysku.
 %py_build
 
 %if %{with tests}
-PYTHONPATH=build-2/lib py.test-%{py_ver} --ignore build -k 'not test_keygen'
+PYTHONPATH=build-2/lib %{__python} -m pytest --ignore build -k 'not test_keygen'
 %endif
 %endif
 
@@ -100,7 +105,7 @@ PYTHONPATH=build-2/lib py.test-%{py_ver} --ignore build -k 'not test_keygen'
 %py3_build
 
 %if %{with tests}
-PYTHONPATH=build-3/lib py.test-%{py3_ver} --ignore build
+PYTHONPATH=build-3/lib %{__python3} -m pytest --ignore build
 %endif
 %endif
 
