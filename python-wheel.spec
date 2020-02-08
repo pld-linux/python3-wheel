@@ -8,13 +8,13 @@
 Summary:	A built-package format for Python
 Summary(pl.UTF-8):	Format zbudowanych pakietów dla Pythona
 Name:		python-%{module}
-Version:	0.29.0
-Release:	4
+Version:	0.34.2
+Release:	1
 License:	MIT
 Group:		Libraries/Python
 #Source0Download: https://pypi.python.org/simple/wheel/
 Source0:	https://pypi.python.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
-# Source0-md5:	555a67e4507cedee23a0deb9651e452f
+# Source0-md5:	ce2a27f99c130a927237b5da1ff5ceaf
 URL:		https://bitbucket.org/pypa/wheel
 %if %{with python2}
 BuildRequires:	python-devel >= 1:2.6
@@ -89,9 +89,6 @@ do formatu na dysku.
 %prep
 %setup -q -n %{module}-%{version}
 
-# not installed as standalone scripts, so remove unneeded shebangs
-%{__sed} -ie '1d' %{module}/{egg2wheel,wininst2wheel}.py
-
 %build
 %if %{with python2}
 %py_build
@@ -117,8 +114,6 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with python3}
 %py3_install
 %{__mv} $RPM_BUILD_ROOT%{_bindir}/wheel{,-3}
-
-%{__rm} -r $RPM_BUILD_ROOT%{py3_sitescriptdir}/%{module}/test
 %endif
 
 %if %{with python2}
@@ -126,15 +121,13 @@ rm -rf $RPM_BUILD_ROOT
 %{__mv} $RPM_BUILD_ROOT%{_bindir}/wheel{,-2}
 ln -sf wheel-2 $RPM_BUILD_ROOT%{_bindir}/wheel
 
-%{__rm} -r $RPM_BUILD_ROOT%{py_sitescriptdir}/%{module}/test
-
 %py_postclean
 %endif
 
 %if %{with python2}
 %files
 %defattr(644,root,root,755)
-%doc CHANGES.txt LICENSE.txt README.txt
+%doc LICENSE.txt README.rst
 %attr(755,root,root) %{_bindir}/wheel
 %attr(755,root,root) %{_bindir}/wheel-2
 %{py_sitescriptdir}/wheel
@@ -144,7 +137,7 @@ ln -sf wheel-2 $RPM_BUILD_ROOT%{_bindir}/wheel
 %if %{with python3}
 %files -n python3-%{module}
 %defattr(644,root,root,755)
-%doc CHANGES.txt LICENSE.txt README.txt
+%doc LICENSE.txt README.rst
 %attr(755,root,root) %{_bindir}/wheel-3
 %{py3_sitescriptdir}/wheel
 %{py3_sitescriptdir}/wheel-%{version}-py*.egg-info
