@@ -9,7 +9,7 @@ Summary:	A built-package format for Python
 Summary(pl.UTF-8):	Format zbudowanych pakietów dla Pythona
 Name:		python-%{module}
 Version:	0.34.2
-Release:	1
+Release:	2
 License:	MIT
 Group:		Libraries/Python
 #Source0Download: https://pypi.python.org/simple/wheel/
