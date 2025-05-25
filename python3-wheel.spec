@@ -15,11 +15,11 @@ Group:		Libraries/Python
 Source0:	https://files.pythonhosted.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
 # Source0-md5:	dddc505d0573d03576c7c6c5a4fe0641
 URL:		https://pypi.org/project/wheel/
-BuildRequires:	python3-devel >= 1:3.5
-BuildRequires:	python3-setuptools >= 1:40.9.0
+BuildRequires:	python3-devel >= 1:3.8
+BuildRequires:	python3-setuptools >= 1:65
 %if %{with tests}
 BuildRequires:	python3-keyring
-BuildRequires:	python3-pytest >= 3.0.0
+BuildRequires:	python3-pytest >= 6.0.0
 BuildRequires:	python3-pytest-cov
 %endif
 %if %{with doc}
@@ -27,6 +27,7 @@ BuildRequires:	sphinx-pdg
 %endif
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.714
+Requires:	python3-modules >= 1:3.8
 Conflicts:	python-wheel < 0.37.1
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
