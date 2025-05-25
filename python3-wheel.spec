@@ -11,8 +11,8 @@ Version:	0.45.1
 Release:	1
 License:	MIT
 Group:		Libraries/Python
-#Source0Download: https://pypi.python.org/simple/wheel/
-Source0:	https://pypi.python.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
+#Source0Download: https://pypi.org/simple/wheel/
+Source0:	https://files.pythonhosted.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
 # Source0-md5:	dddc505d0573d03576c7c6c5a4fe0641
 URL:		https://pypi.org/project/wheel/
 BuildRequires:	python3-devel >= 1:3.5
