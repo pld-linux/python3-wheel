@@ -7,27 +7,30 @@
 Summary:	A built-package format for Python
 Summary(pl.UTF-8):	Format zbudowanych pakietów dla Pythona
 Name:		python3-%{module}
-Version:	0.45.1
+Version:	0.48.0
 Release:	1
 License:	MIT
 Group:		Libraries/Python
 #Source0Download: https://pypi.org/simple/wheel/
 Source0:	https://files.pythonhosted.org/packages/source/w/wheel/%{module}-%{version}.tar.gz
-# Source0-md5:	dddc505d0573d03576c7c6c5a4fe0641
+# Source0-md5:	f668e4885de814378b332eceea04a8a0
 URL:		https://pypi.org/project/wheel/
-BuildRequires:	python3-devel >= 1:3.8
-BuildRequires:	python3-setuptools >= 1:65
+BuildRequires:	python3-build
+BuildRequires:	python3-flit_core >= 3.11
+BuildRequires:	python3-flit_core < 5
+BuildRequires:	python3-installer
+BuildRequires:	python3-modules >= 1:3.9
 %if %{with tests}
-BuildRequires:	python3-keyring
+BuildRequires:	python3-packaging >= 26.0
 BuildRequires:	python3-pytest >= 6.0.0
-BuildRequires:	python3-pytest-cov
+BuildRequires:	python3-setuptools >= 1:77
 %endif
 %if %{with doc}
 BuildRequires:	sphinx-pdg
 %endif
 BuildRequires:	rpm-pythonprov
-BuildRequires:	rpmbuild(macros) >= 1.714
-Requires:	python3-modules >= 1:3.8
+BuildRequires:	rpmbuild(macros) >= 2.044
+Requires:	python3-modules >= 1:3.9
 Conflicts:	python-wheel < 0.37.1
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -63,13 +66,12 @@ Dokumentacja API modułu Pythona wheel.
 %setup -q -n %{module}-%{version}
 
 %build
-%py3_build
+%py3_build_pyproject
 
 %if %{with tests}
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
-PYTEST_PLUGINS="pytest_cov.plugin" \
 PYTHONPATH=$(pwd)/src \
-%{__python3} -m pytest tests -k 'not test_macosx_libfile'
+%{__python3} -m pytest tests
 %endif
 
 %if %{with doc}
@@ -79,7 +81,7 @@ PYTHONPATH=$(pwd)/src \
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%py3_install
+%py3_install_pyproject
 
 %{__mv} $RPM_BUILD_ROOT%{_bindir}/wheel{,-3}
 ln -sf wheel-3 $RPM_BUILD_ROOT%{_bindir}/wheel
@@ -93,7 +95,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/wheel
 %attr(755,root,root) %{_bindir}/wheel-3
 %{py3_sitescriptdir}/wheel
-%{py3_sitescriptdir}/wheel-%{version}-py*.egg-info
+%{py3_sitescriptdir}/wheel-%{version}.dist-info
 
 %if %{with doc}
 %files apidocs
